@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GESTOR MÈDIC 360 — Prova de micròfon</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;background:#f2f6fa;color:#19334b;margin:0;padding:24px}main{max-width:620px;margin:50px auto;background:white;border-radius:18px;padding:30px;box-shadow:0 10px 35px #18334b16}h1{font-size:1.55rem}button{background:#1767b3;color:white;border:0;padding:13px 20px;border-radius:10px;font-size:1rem;cursor:pointer}button:disabled{opacity:.5}#status{margin-top:18px;font-weight:600}#resultat{margin-top:12px;padding:16px;border:1px solid #d4e0eb;border-radius:10px;min-height:50px;white-space:pre-wrap}small{color:#566c7f;display:block;margin-top:18px;line-height:1.5}
+</style>
+</head>
+<body><main>
+<h1>🎙️ Prova de micròfon</h1>
+<p>Prem el botó i digues només: <strong>«Hola, estic provant el micròfon».</strong></p>
+<button id="micro">Activar micròfon</button>
+<div id="status" role="status">Encara no s'ha iniciat la prova.</div>
+<div id="resultat" aria-label="Transcripció">La transcripció apareixerà aquí.</div>
+<small>No introdueixis dades personals ni mèdiques. El reconeixement de veu del navegador pot enviar l'àudio a un servei extern. Aquesta pàgina no desa ni envia la transcripció per compte propi.</small>
+</main>
+<script>
+const boto=document.getElementById('micro'),estat=document.getElementById('status'),resultat=document.getElementById('resultat');
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SpeechRecognition){estat.textContent='Aquest navegador no admet el reconeixement de veu web.';boto.disabled=true;}
+else{
+ let reconeixement=null;
+ boto.addEventListener('click',()=>{
+  if(reconeixement)return;
+  reconeixement=new SpeechRecognition();
+  reconeixement.lang='ca-ES';reconeixement.interimResults=false;reconeixement.maxAlternatives=1;
+  estat.textContent='Sol·licitant permís del micròfon…';resultat.textContent='';boto.disabled=true;
+  reconeixement.onstart=()=>{estat.textContent='Escoltant… parla ara.'};
+  reconeixement.onresult=e=>{resultat.textContent=e.results[0][0].transcript;estat.textContent='Transcripció completada.'};
+  reconeixement.onerror=e=>{estat.textContent='Error del micròfon: '+e.error};
+  reconeixement.onend=()=>{boto.disabled=false;reconeixement=null;if(estat.textContent==='Escoltant… parla ara.')estat.textContent='La prova ha acabat sense transcripció.'};
+  try{reconeixement.start()}catch(e){estat.textContent='No s’ha pogut iniciar: '+e.message;boto.disabled=false;reconeixement=null}
+ });
+}
+</script>
+</body></html>
